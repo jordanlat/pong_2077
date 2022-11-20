@@ -37,9 +37,9 @@ int vitesse_medium = 10;
 int vitesse_low    = 20;
 
 // Couleur 
-CHSV bleu    = CHSV(240,255,150); 
-CHSV rouge   = CHSV(340,255,150);
-CHSV orange  = CHSV(30,255,150);
+CHSV bleu    = CHSV(240,200,60); 
+CHSV rouge   = CHSV(340,200,60);
+CHSV orange  = CHSV(30,200,60);
 
 //test
 boolean state = true;
@@ -57,8 +57,8 @@ void setup() {
 
 void loop() {
   //debug 
-  if (state)test_pal_vitess();
-  /*
+  //if (state)test_pal_vitess();
+ 
   if(FIN == true){
     // Affiche la transition  
     transition();
@@ -71,7 +71,6 @@ void loop() {
     // Le Jeu héhé  
     game();
   }
- */
 }
 
 
@@ -139,12 +138,12 @@ void game(){
         leds[nbrLED] = rouge;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_high);
-      } else if (type_speed == "low") {
+      } else if (type_speed == "medium") {
         //Affiche la couleur
         leds[nbrLED] = orange;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_medium);
-      } else {
+      } else if (type_speed == "low") {
         //Affiche la couleur
         leds[nbrLED] = bleu;
         // Vitesse d'actualisation
@@ -153,12 +152,12 @@ void game(){
       
       //-- Inversion de sens --//
       if(nbrLED<lim_mini_bp1 && nbrLED>=lim_maxi_bp1  && digitalRead(bp1) == 0){
-        if(nbrLED<=lim_mini_bp1-1 && nbrLED<=lim_mini_bp1-4){
-          type_speed = "high";
-        } else if (nbrLED<lim_mini_bp1-4 && nbrLED<=lim_mini_bp1-7){
-          type_speed = "medium";
-        } else {
+        if(nbrLED>=lim_maxi_bp1 && nbrLED<=lim_mini_bp1-7){
           type_speed = "low";
+        } else if (nbrLED>lim_mini_bp1-7 && nbrLED<=lim_mini_bp1-4){
+          type_speed = "medium";
+        } else if(nbrLED<NUM_LEDS-1 && nbrLED>lim_mini_bp1-4){
+          type_speed = "high";
         }
         sens = !sens;
         break;
@@ -200,12 +199,12 @@ void game(){
         leds[nbrLED] = rouge;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_high);
-      } else if (type_speed == "low") {
+      } else if (type_speed == "medium") {
         //Affiche la couleur
         leds[nbrLED] = orange;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_medium);
-      } else {
+      } else if (type_speed == "low"){
         //Affiche la couleur
         leds[nbrLED] = bleu;
         // Vitesse d'actualisation
@@ -214,12 +213,12 @@ void game(){
 
       //-- Inversion de sens --//
       if(nbrLED<=lim_maxi_bp2 && nbrLED>lim_mini_bp2 && digitalRead(bp2) == 0){
-        if(nbrLED<=lim_mini_bp2+1 && nbrLED<=lim_mini_bp2+4){
-          type_speed = "high";
-        } else if (nbrLED<lim_mini_bp2+4 && nbrLED<=lim_mini_bp2+7){
-          type_speed = "medium";
-        } else {
+        if(nbrLED<=lim_maxi_bp2-1 && nbrLED>lim_mini_bp2+6){
           type_speed = "low";
+        } else if (nbrLED>lim_mini_bp2+3 && nbrLED<=lim_mini_bp2+6){
+          type_speed = "medium";
+        } else if(nbrLED>=1 && nbrLED<=lim_mini_bp2+3){
+          type_speed = "high";
         }
         sens = !sens;
         break; 
@@ -278,7 +277,9 @@ void transition(){
 
 
 //test des palier de vitesse
+/*
 void test_pal_vitess (){
+  leds.fadeToBlackBy(180);
   for (nbrLED=0; nbrLED<=NUM_LEDS+1;nbrLED+=1){
     if(nbrLED>=lim_maxi_bp1 && nbrLED<=lim_mini_bp1-7) {
       leds[nbrLED] = CRGB(60,0,0);
@@ -288,24 +289,37 @@ void test_pal_vitess (){
       leds[nbrLED] = CRGB(0,60,0);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("Vert");
-    } else if(nbrLED<lim_mini_bp1 && nbrLED<lim_mini_bp1-4){
+    } else if(nbrLED<NUM_LEDS-1 && nbrLED>lim_mini_bp1-4){
       leds[nbrLED] = CRGB(0,0,60);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("Rouge");
     } 
-    /*
-    else {
-      leds[nbrLED] = CRGB(10,60,60);  
+
+  
+
+    if(nbrLED<=lim_maxi_bp2-1 && nbrLED>lim_mini_bp2+6) {
+      leds[nbrLED] = CRGB(60,0,0);
+      Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
+      Serial.println("bleu");
+    }else if(nbrLED>lim_mini_bp2+3 && nbrLED<=lim_mini_bp2+6){
+      leds[nbrLED] = CRGB(0,60,0);
+      Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
+      Serial.println("Vert");
+    } else if(nbrLED>=1 && nbrLED<=lim_mini_bp2+3){
+      leds[nbrLED] = CRGB(0,0,60);
+      Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
+      Serial.println("Rouge");
     }
-    */
-    //FastLED.show();
-    FastLED.delay(15);
+
+
+    delay(50);
+    FastLED.delay(100);
   }
-  leds[14] = CRGB(60,60,60);
-  FastLED.delay(15);
+  //leds[14] = CRGB(60,60,60);
+  //FastLED.delay(60);
   state = false;
 }
-
+*/
 //debug//
 /*
 Serial.print("nbrLED = ");Serial.println(nbrLED);
