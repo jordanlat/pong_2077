@@ -42,7 +42,13 @@ CHSV rouge   = CHSV(340,200,60);
 CHSV orange  = CHSV(30,200,60);
 
 //test
-boolean state = true;
+// boolean state = true;
+
+// Déclenche le piège
+boolean trig_trap = false;
+
+// Dé
+int r = 0;
 
 void setup() {
   // N'est utile que pour du débug 
@@ -128,6 +134,8 @@ void inits(){
 void game(){
   //--De bp2 à bp1--//
   if(sens == true && starter == true){
+    r =  random(1,10);
+    reset_trap();
     for(nbrLED ; nbrLED <= NUM_LEDS ; nbrLED+=1){
       limites();
       // Ajoute un délai avant de repassé à sombre
@@ -138,6 +146,8 @@ void game(){
         leds[nbrLED] = rouge;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_high);
+        // Trap 
+        trap();
       } else if (type_speed == "medium") {
         //Affiche la couleur
         leds[nbrLED] = orange;
@@ -151,7 +161,7 @@ void game(){
       }
       
       //-- Inversion de sens --//
-      if(nbrLED<lim_mini_bp1 && nbrLED>=lim_maxi_bp1  && digitalRead(bp1) == 0){
+      if(nbrLED<lim_mini_bp1 && nbrLED>=lim_maxi_bp1  && digitalRead(bp1) == 0 || trig_trap == true){
         if(nbrLED>=lim_maxi_bp1 && nbrLED<=lim_mini_bp1-7){
           type_speed = "low";
         } else if (nbrLED>lim_mini_bp1-7 && nbrLED<=lim_mini_bp1-4){
@@ -162,7 +172,6 @@ void game(){
         sens = !sens;
         break;
       }
-
       //-- en cas d'erreur : si on attteint la "limite_score" qui est la dernière led, ou si on appuie sur le bp avant d'étre dans la zone de renvoie, alors on affiche qui à gagner en vert et perdant en rouge
       if(nbrLED >=lim_mini_bp1 || (nbrLED<lim_maxi_bp1 && digitalRead(bp1)==0)){
         Serial.println("BP2 FIN");
@@ -190,6 +199,8 @@ void game(){
   
   //de bp1 à bp2
   else if(sens == false && starter == true){
+    r =  random(1,10);
+    reset_trap();
     for (nbrLED; nbrLED >= lim_mini_bp2; nbrLED-=1){
       leds.fadeToBlackBy(180);
       limites();
@@ -199,6 +210,8 @@ void game(){
         leds[nbrLED] = rouge;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_high);
+        // Trap 
+        trap();
       } else if (type_speed == "medium") {
         //Affiche la couleur
         leds[nbrLED] = orange;
@@ -210,9 +223,9 @@ void game(){
         // Vitesse d'actualisation
         FastLED.delay(vitesse_low);
       }
-
+      
       //-- Inversion de sens --//
-      if(nbrLED<=lim_maxi_bp2 && nbrLED>lim_mini_bp2 && digitalRead(bp2) == 0){
+      if(nbrLED<=lim_maxi_bp2 && nbrLED>lim_mini_bp2 && digitalRead(bp2) == 0 || trig_trap == true){
         if(nbrLED<=lim_maxi_bp2-1 && nbrLED>lim_mini_bp2+6){
           type_speed = "low";
         } else if (nbrLED>lim_mini_bp2+3 && nbrLED<=lim_mini_bp2+6){
@@ -223,7 +236,6 @@ void game(){
         sens = !sens;
         break; 
       }
-
       //-- En cas d'erreur: limite atteinte ou pression trop tôt --//
       if(nbrLED <= lim_mini_bp2 || (nbrLED>lim_maxi_bp2 && digitalRead(bp2)== 0)){
         Serial.println("BP1 FIN");
@@ -252,6 +264,30 @@ void game(){
   }
 }
 
+
+void trap() {
+  /*
+   Si le joueur décide de lancer la balle à vitesse max, alors il 
+   y a une probabilité qu'un piège se lance.
+  */ 
+  Serial.println(r);
+  if (nbrLED>=(NUM_LEDS/2-10) && nbrLED>=(NUM_LEDS/2+10)) {
+    if (r>=4){
+      
+      //Serial.println("Trap actif !");
+      //Serial.println(trig_trap);
+      //Serial.println(nbrLED);
+      trig_trap = true;  
+      
+    }
+  }
+}
+
+void reset_trap(){
+  if(trig_trap){
+    trig_trap = false;  
+  }
+}
 
 void limites(){
   leds[lim_mini_bp1]=CHSV(32,255,125);
