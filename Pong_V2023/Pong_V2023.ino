@@ -20,13 +20,14 @@ boolean starter = false;
 
 /* Définit les limites de la zone de renvoie */
 // Limite mini bp1(rappel: -1, on commence à 0)
+int lim = 18;
 int lim_mini_bp1 = NUM_LEDS-1;
 // Limite maxi bp1
-int lim_maxi_bp1 = NUM_LEDS-10;
+int lim_maxi_bp1 = NUM_LEDS-lim;
 // Limite mini bp2
 int lim_mini_bp2 = 0;
 // Limite maxi bp2
-int lim_maxi_bp2 = 10;
+int lim_maxi_bp2 = lim;
 
 // Type de vitesse
 String type_speed;
@@ -42,7 +43,7 @@ CHSV rouge   = CHSV(340,200,60);
 CHSV orange  = CHSV(30,200,60);
 
 //test
-// boolean state = true;
+//boolean state = true;
 
 // Déclenche le piège
 boolean trig_trap = false;
@@ -162,11 +163,11 @@ void game(){
       
       //-- Inversion de sens --//
       if(nbrLED<lim_mini_bp1 && nbrLED>=lim_maxi_bp1  && digitalRead(bp1) == 0 || trig_trap == true){
-        if(nbrLED>=lim_maxi_bp1 && nbrLED<=lim_mini_bp1-7){
+        if(nbrLED>=lim_maxi_bp1 && nbrLED<(lim_maxi_bp1+lim/3)){
           type_speed = "low";
-        } else if (nbrLED>lim_mini_bp1-7 && nbrLED<=lim_mini_bp1-4){
+        } else if (nbrLED<lim_mini_bp1-(lim/3) && nbrLED>=lim_maxi_bp1+(lim/3)){
           type_speed = "medium";
-        } else if(nbrLED<NUM_LEDS-1 && nbrLED>lim_mini_bp1-4){
+        } else if(nbrLED<=lim_mini_bp1 && nbrLED>=lim_mini_bp1-(lim/3)){
           type_speed = "high";
         }
         sens = !sens;
@@ -226,11 +227,11 @@ void game(){
       
       //-- Inversion de sens --//
       if(nbrLED<=lim_maxi_bp2 && nbrLED>lim_mini_bp2 && digitalRead(bp2) == 0 || trig_trap == true){
-        if(nbrLED<=lim_maxi_bp2-1 && nbrLED>lim_mini_bp2+6){
+        if(nbrLED<lim_maxi_bp2 && nbrLED>=lim_maxi_bp2-(lim/3)){
           type_speed = "low";
-        } else if (nbrLED>lim_mini_bp2+3 && nbrLED<=lim_mini_bp2+6){
+        } else if (nbrLED>=lim_mini_bp2+(lim/3) && nbrLED<lim_maxi_bp2-(lim/3)){
           type_speed = "medium";
-        } else if(nbrLED>=1 && nbrLED<=lim_mini_bp2+3){
+        } else if(nbrLED>=lim_mini_bp2 && nbrLED<lim_mini_bp2+(lim/3)){
           type_speed = "high";
         }
         sens = !sens;
@@ -317,15 +318,15 @@ void transition(){
 void test_pal_vitess (){
   leds.fadeToBlackBy(180);
   for (nbrLED=0; nbrLED<=NUM_LEDS+1;nbrLED+=1){
-    if(nbrLED>=lim_maxi_bp1 && nbrLED<=lim_mini_bp1-7) {
+    if(nbrLED>=lim_maxi_bp1 && nbrLED<(lim_maxi_bp1+lim/3)) {
       leds[nbrLED] = CRGB(60,0,0);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("bleu");
-    }else if(nbrLED>lim_mini_bp1-7 && nbrLED<=lim_mini_bp1-4){
+    }else if(nbrLED<lim_mini_bp1-(lim/3) && nbrLED>=lim_maxi_bp1+(lim/3)){
       leds[nbrLED] = CRGB(0,60,0);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("Vert");
-    } else if(nbrLED<NUM_LEDS-1 && nbrLED>lim_mini_bp1-4){
+    } else if(nbrLED<=lim_mini_bp1 && nbrLED>=lim_mini_bp1-(lim/3)){
       leds[nbrLED] = CRGB(0,0,60);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("Rouge");
@@ -333,15 +334,15 @@ void test_pal_vitess (){
 
   
 
-    if(nbrLED<=lim_maxi_bp2-1 && nbrLED>lim_mini_bp2+6) {
+    if(nbrLED<lim_maxi_bp2 && nbrLED>=lim_maxi_bp2-(lim/3)) {
       leds[nbrLED] = CRGB(60,0,0);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("bleu");
-    }else if(nbrLED>lim_mini_bp2+3 && nbrLED<=lim_mini_bp2+6){
+    }else if(nbrLED>=lim_mini_bp2+(lim/3) && nbrLED<lim_maxi_bp2-(lim/3)){
       leds[nbrLED] = CRGB(0,60,0);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("Vert");
-    } else if(nbrLED>=1 && nbrLED<=lim_mini_bp2+3){
+    } else if(nbrLED>=lim_mini_bp2 && nbrLED<lim_mini_bp2+(lim/3)){
       leds[nbrLED] = CRGB(0,0,60);
       Serial.print("LEd nbr = ");Serial.print(nbrLED);Serial.print("// couleur = ");
       Serial.println("Rouge");
@@ -349,72 +350,10 @@ void test_pal_vitess (){
 
 
     delay(50);
-    FastLED.delay(100);
+    FastLED.delay(10);
   }
   //leds[14] = CRGB(60,60,60);
   //FastLED.delay(60);
   state = false;
 }
-*/
-//debug//
-/*
-Serial.print("nbrLED = ");Serial.println(nbrLED);
-Serial.print("Etat bp1 = ");Serial.println(digitalRead(bp1));
-Serial.print("lim_mini_bp1 = ");Serial.println(lim_mini_bp1);
-Serial.print("lim_maxi_bp1 = ");Serial.println(lim_maxi_bp1);
-*/
-//Pour debug
-/*
-void checkbp(){
-  if (digitalRead(bp1) == 0){
-    Serial.println("BP1");
-  }
-  if (digitalRead(bp2) == 0){
-    Serial.println("BP2");
-  } 
-}
-*/
-/*
-De Bp2 à BP1
-void trap(){
-  //-- Piège à vitesse max --//
-  if(vitesse <=vitesse_max){
-    randomLED = random(limite_score,NUM_LEDS-limite_score);
-    if(r==0 || r==2){
-      if(randomLED == nbrLED ){
-        leds[nbrLED]=CHSV(160,255,150);
-        delay(300); 
-      }
-    }
-    if(r==6|| r==4){
-      if(nbrLED<=45 && nbrLED>=43){
-        sens=!sens;
-        break;
-      }
-    }
-  }  
-}
-*/
-
-
-
-/*
-De Bp2 à BP1
-    //-- Piège à vitesse max --//
-    if(vitesse <=vitesse_max){
-      randomLED = random(limite_score,NUM_LEDS-limite_score);
-      if(r==0 || r==2){
-        if(randomLED == nbrLED ){
-        leds[nbrLED]=CHSV(160,255,150);
-        delay(300); 
-        }
-      }
-      if(r==4 || r==6){
-        if(nbrLED<=(NUM_LEDS/2)+5 && nbrLED>=(NUM_LEDS/2)-5){
-          sens=!sens;
-          delay(500);
-          break;
-        }
-      }
-    }
 */
