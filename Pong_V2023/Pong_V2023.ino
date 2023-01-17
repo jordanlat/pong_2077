@@ -50,14 +50,19 @@ boolean trig_trap = false;
 
 // Dé
 int r = 0;
+int r_led = 0;
 
 // Power Up
 int powerup1 = 0;
 int powerup2 = 0;
 
+// Nombre de stack à cumuler
+int max_powerUp =3;
+
 void setup() {
   // N'est utile que pour du débug 
   //Serial.begin(115200);
+  Serial.begin(9600);
   // Définit le bouton du J1
   pinMode(bp1, INPUT_PULLUP);
   // Définit le bouton du J2
@@ -69,7 +74,7 @@ void setup() {
 void loop() {
   //debug 
   //if (state)test_pal_vitess();
- 
+  //test_zone();
   if(FIN == true){
     // Affiche la transition  
     transition();
@@ -143,12 +148,10 @@ void inits(){
 void game(){
   //--De bp2 à bp1--//
   if(sens == true && starter == true){
-    r =  random(1,10);
     reset_trap();
-
-    for(nbrLED ; nbrLED <= NUM_LEDS ; nbrLED+=1){
+    for(nbrLED ; nbrLED <= NUM_LEDS-1 ; nbrLED+=1){
       limites();
-      //showPowerUP();
+      showPowerUP();
       // Ajoute un délai avant de repassé à sombre
       leds.fadeToBlackBy(180);
       
@@ -157,11 +160,11 @@ void game(){
         leds[nbrLED] = rouge;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_high);
-        // Trap 
-        trap();
       } else if (type_speed == "medium") {
         //Affiche la couleur
         leds[nbrLED] = orange;
+        // Trap 
+        trap();
         // Vitesse d'actualisation
         FastLED.delay(vitesse_medium);
       } else if (type_speed == "low") {
@@ -179,6 +182,7 @@ void game(){
         } else if (nbrLED<lim_mini_bp1-(lim/3) && nbrLED>=lim_maxi_bp1+(lim/3)){
           type_speed = "medium";
           powerup1 = 0;
+          r = random(1,10);
         } else if(nbrLED<=lim_mini_bp1 && nbrLED>=lim_mini_bp1-(lim/3)){
           powerup1 = powerup1 +1;
           type_speed = "high";
@@ -214,28 +218,28 @@ void game(){
         break;
       }
     }
+    //r =  random(0,5);
   }
   
   
   //de bp1 à bp2
   else if(sens == false && starter == true){
-    r =  random(1,10);
     reset_trap();
     
     for (nbrLED; nbrLED >= lim_mini_bp2; nbrLED-=1){
-      leds.fadeToBlackBy(180);
       limites();
-      //showPowerUP();
+      showPowerUP();
+      leds.fadeToBlackBy(180);
       if(type_speed == "high"){
         //Affiche la couleur
         leds[nbrLED] = rouge;
         // Vitesse d'actualisation
         FastLED.delay(vitesse_high);
-        // Trap 
-        trap();
       } else if (type_speed == "medium") {
         //Affiche la couleur
         leds[nbrLED] = orange;
+        // Trap 
+        trap();
         // Vitesse d'actualisation
         FastLED.delay(vitesse_medium);
       } else if (type_speed == "low"){
@@ -268,6 +272,7 @@ void game(){
       */
       //-- En cas d'erreur: limite atteinte ou pression trop tôt --//
       if(nbrLED <= lim_mini_bp2 || (nbrLED>lim_maxi_bp2 && digitalRead(bp2)== 0)){
+        /*
         //on fait clignoté 3 fois, un coter rouger et l'autre vert pour montré qui a gagné
         for(int i=0;i<3;i++){
           for(int j=0;j<NUM_LEDS/2;j++){
@@ -285,9 +290,15 @@ void game(){
         }
 
         FIN = true;
+        */
+        //r =  random(1,10);
+        type_speed = "medium";
+        sens = !sens;
+        powerup2 = powerup2 +1;
         break;
       }
     }
+    //r =  random(1,10);
   }
 }
 
@@ -297,19 +308,17 @@ void trap() {
    Si le joueur décide de lancer la balle à vitesse max, alors il 
    y a une probabilité qu'un piège se lance.
   */ 
-  if (nbrLED>=(NUM_LEDS/2-10) && nbrLED>=(NUM_LEDS/2+10)) {
-    if (r>=4){
-      
-      //Serial.println("Trap actif !");
-      //Serial.println(trig_trap);
-      //Serial.println(nbrLED);
-      trig_trap = true;  
-      
-    }
+  if (nbrLED>=(NUM_LEDS/2-10) && nbrLED<=(NUM_LEDS/2+10) && nbrLED == r_led && r>=5) {
+    Serial.println("Trigger trap");
+    trig_trap = true;  
   }
 }
 
 void reset_trap(){
+  r_led = random((NUM_LEDS/2-20),(NUM_LEDS/2+20));
+  Serial.print("r_led=");Serial.println(r_led);
+  r = random(1,10);
+  //Serial.print("R=");Serial.println(r);
   if(trig_trap){
     trig_trap = false;  
   }
@@ -320,6 +329,7 @@ void limites(){
   leds[lim_maxi_bp1]=CHSV(32,255,125);
   leds[lim_mini_bp2]=CHSV(32,255,125);
   leds[lim_maxi_bp2]=CHSV(32,255,125);
+  showPowerUP();
 }
 void transition(){
   int fadeColor;
@@ -336,7 +346,9 @@ void transition(){
   }
   delay(15);
 }
-/*
+
+
+
 void showPowerUP(){
     // pour Bp1
     for(int x=0; x<powerup1; x++){
@@ -347,8 +359,21 @@ void showPowerUP(){
       leds[lim_maxi_bp2+x+1]=CHSV(0,0,100);
     }
 }
-*/
 
+/**
+  Test Zone
+**/
+/*
+void test_zone(){
+  leds.fadeToBlackBy(180);
+  for (nbrLED=0; nbrLED<=NUM_LEDS+1;nbrLED+=1){
+    if (nbrLED>=(NUM_LEDS/2-10) && nbrLED<=(NUM_LEDS/2+10)) {
+      leds[nbrLED] = CRGB(60,0,0);      
+    }
+  } 
+  FastLED.delay(10);
+}
+*/
 /*
   Définir 2 variable INT powerup1 et powerup2
 
