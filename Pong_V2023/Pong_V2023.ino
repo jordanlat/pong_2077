@@ -1,3 +1,4 @@
+
 // Import de la librairie responsable de la lumière
 #include <FastLED.h>
 // Pin Data de la bande led
@@ -55,14 +56,16 @@ int r_led = 0;
 // Power Up
 int powerup1 = 0;
 int powerup2 = 0;
+boolean trig_power1 = false;
+boolean trig_power2 = false;
 
 // Nombre de stack à cumuler
-int max_powerUp =3;
+int max_powerUp = 3;
 
 void setup() {
   // N'est utile que pour du débug 
   //Serial.begin(115200);
-  Serial.begin(9600);
+  //Serial.begin(9600);
   // Définit le bouton du J1
   pinMode(bp1, INPUT_PULLUP);
   // Définit le bouton du J2
@@ -155,6 +158,13 @@ void game(){
       // Ajoute un délai avant de repassé à sombre
       leds.fadeToBlackBy(180);
       
+      // Power Up
+      if((nbrLED<lim_maxi_bp1 && digitalRead(bp1)==0) && trig_power1 == true){
+        trig_trap = true;
+        type_speed = "high";
+        powerup1 = 0;
+      }
+      
       if(type_speed == "high"){
         //Affiche la couleur
         leds[nbrLED] = rouge;
@@ -191,14 +201,8 @@ void game(){
         break;
       }
       
-      // Power Up
-      /*
-      if((nbrLED<lim_maxi_bp1 && digitalRead(bp1)==0) && powerup1>=3){
-        trig_trap = true;
-      }
-      */
       //-- en cas d'erreur : si on attteint la "limite_score" qui est la dernière led, ou si on appuie sur le bp avant d'étre dans la zone de renvoie, alors on affiche qui à gagner en vert et perdant en rouge
-      if(nbrLED >=lim_mini_bp1 || (nbrLED<lim_maxi_bp1 && digitalRead(bp1)==0)){
+      if(nbrLED >=lim_mini_bp1 || (nbrLED<lim_maxi_bp1 && digitalRead(bp1)==0 && trig_power1 == false)){
         //on fait clignoté 3 fois, un coter rouger et l'autre vert pour montré qui a gagné
         for(int i=0;i<3;i++){
           for(int j=0;j<NUM_LEDS/2;j++){
@@ -218,18 +222,24 @@ void game(){
         break;
       }
     }
-    //r =  random(0,5);
+    reset_trap();
   }
   
   
   //de bp1 à bp2
   else if(sens == false && starter == true){
-    reset_trap();
     
     for (nbrLED; nbrLED >= lim_mini_bp2; nbrLED-=1){
       limites();
       showPowerUP();
       leds.fadeToBlackBy(180);
+      
+      // Power Up
+      if((nbrLED>lim_maxi_bp2 && digitalRead(bp2)== 0) && trig_power2 == true){
+        trig_trap = true;
+        type_speed = "high";
+        powerup1 = 0;
+      }
       if(type_speed == "high"){
         //Affiche la couleur
         leds[nbrLED] = rouge;
@@ -264,15 +274,9 @@ void game(){
         sens = !sens;
         break; 
       }
-      // Power Up
-      /*
-      if((nbrLED>lim_maxi_bp2 && digitalRead(bp2)== 0) && powerup2>=3){
-        trig_trap = true;
-      }
-      */
+
       //-- En cas d'erreur: limite atteinte ou pression trop tôt --//
-      if(nbrLED <= lim_mini_bp2 || (nbrLED>lim_maxi_bp2 && digitalRead(bp2)== 0)){
-        /*
+      if(nbrLED <= lim_mini_bp2 || (nbrLED>lim_maxi_bp2 && digitalRead(bp2) == 0 && trig_power2 == false)){
         //on fait clignoté 3 fois, un coter rouger et l'autre vert pour montré qui a gagné
         for(int i=0;i<3;i++){
           for(int j=0;j<NUM_LEDS/2;j++){
@@ -290,15 +294,11 @@ void game(){
         }
 
         FIN = true;
-        */
-        //r =  random(1,10);
-        type_speed = "medium";
         sens = !sens;
-        powerup2 = powerup2 +1;
         break;
       }
     }
-    //r =  random(1,10);
+    reset_trap();
   }
 }
 
@@ -309,16 +309,14 @@ void trap() {
    y a une probabilité qu'un piège se lance.
   */ 
   if (nbrLED>=(NUM_LEDS/2-10) && nbrLED<=(NUM_LEDS/2+10) && nbrLED == r_led && r>=5) {
-    Serial.println("Trigger trap");
     trig_trap = true;  
+    type_speed = "high";
   }
 }
 
 void reset_trap(){
-  r_led = random((NUM_LEDS/2-20),(NUM_LEDS/2+20));
-  Serial.print("r_led=");Serial.println(r_led);
+  r_led = random((NUM_LEDS/2-10),(NUM_LEDS/2+10));
   r = random(1,10);
-  //Serial.print("R=");Serial.println(r);
   if(trig_trap){
     trig_trap = false;  
   }
@@ -350,14 +348,35 @@ void transition(){
 
 
 void showPowerUP(){
-    // pour Bp1
-    for(int x=0; x<powerup1; x++){
-      leds[lim_maxi_bp1-x-1]=CHSV(0,0,100);
-    }
-    // pour Bp2
-    for(int x=0; x<powerup2; x++){
-      leds[lim_maxi_bp2+x+1]=CHSV(0,0,100);
-    }
+  // On s'assure que les power up ne dépasse pas 3
+  if(powerup1>3)powerup1 = 3;
+  if(powerup2>3)powerup2 = 3;
+  
+  // On active le power up
+  if(powerup1 == 3)trig_power1 = true;
+  if(powerup2 == 3)trig_power2 = true;
+  
+  // On définit la couleur des powerups
+  for(int x=0; x<powerup1; x++){
+    leds[lim_maxi_bp1-x-1]=CHSV(0,0,100);
+  }
+  for(int x=0; x<powerup2; x++){
+    leds[lim_maxi_bp2+x+1]=CHSV(0,0,100);
+  }
+
+
+/*
+  // Doit déclancher le powerup
+  if(powerup1==3 && digitalRead(bp1) == 0){
+    trig_trap = true;
+    type_speed = "high";
+    Serial.println(trig_trap);
+  }
+  if(powerup2==3 && digitalRead(bp2) == 0){
+    trig_trap = true;
+    type_speed = "high";
+  }
+  */
 }
 
 /**
